@@ -86,9 +86,9 @@ def get_map_info(xmldoc, data):
 
     info['geometry'] = {}
     node = xmldoc.getElementsByTagName('Width')[0].childNodes[0]
-    info['geometry']['width'] = node.nodeValue
+    info['geometry']['width'] = int(node.nodeValue)
     node = xmldoc.getElementsByTagName('Height')[0].childNodes[0]
-    info['geometry']['height'] = node.nodeValue
+    info['geometry']['height'] = int(node.nodeValue)
 
     data.update(info)
 
@@ -114,9 +114,9 @@ def get_airfields_info(xmldoc, data):
     nodes = xmldoc.getElementsByTagName('Airfield')
     for node in nodes:
         airfield = {}
-        airfield['id'] = node.attributes['ID'].value
-        airfield['landing_vector'] = node.attributes['A'].value
-        airfield['type'] = node.attributes['T1'].value
+        airfield['id'] = int(node.attributes['ID'].value)
+        airfield['landing_vector'] = int(node.attributes['A'].value)
+        airfield['type'] = int(node.attributes['T1'].value)
         airfield['pos'] = get_position(node)
 
         airfield_list.append(airfield)
@@ -125,13 +125,12 @@ def get_airfields_info(xmldoc, data):
     })
 
 def get_position(node):
-    x = node.attributes['X'].value
-    y = node.attributes['Y'].value
+    x = float(node.attributes['X'].value)
+    y = float(node.attributes['Y'].value)
     return {
         'x': x,
         'y': y,
     }
-
 
 if __name__ == "__main__":
     main()

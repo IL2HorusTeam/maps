@@ -79,14 +79,21 @@ for DIR_PATH in $(find $SOURCE_PATH -mindepth 1 -maxdepth 1 -type d); do
     DIR_PATH=$DIR_PATH"/"
     DIR_NAME=$(basename $DIR_PATH)
 
+    echo
+    echo
+    echo "Processing $DIR_NAME"
+
     NEW_DIR_PATH=$TARGET_PATH"/"$DIR_NAME"/"
     HEIGHTS_PATH=$NEW_DIR_PATH"heights/"
 
-    mkdir -p $NEW_DIR_PATH
-    mkdir -p $HEIGHTS_PATH
+    # mkdir -p $NEW_DIR_PATH
+    # mkdir -p $HEIGHTS_PATH
 
-    cp $DIR_PATH"Map.png" $NEW_DIR_PATH"map.png"
-    cp $DIR_PATH"Map_h.png" $HEIGHTS_PATH"bw.png"
+    # cp $DIR_PATH"Map.png" $NEW_DIR_PATH"map.png"
+    # cp $DIR_PATH"Map_h.png" $HEIGHTS_PATH"bw.png"
 
-    xml2json.py -s $DIR_PATH"Props.xml" -t $NEW_DIR_PATH"info.json"
+    # xml2json.py -s $DIR_PATH"Props.xml" -t $NEW_DIR_PATH"info.json"
+    update_town_areas.py --image=$NEW_DIR_PATH"map.png" --info=$NEW_DIR_PATH"info.json"
 done
+
+echo "Done."
