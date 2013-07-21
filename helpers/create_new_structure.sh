@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 # ------------------------------------------------------------------------------
 # Definitions
 # ------------------------------------------------------------------------------
@@ -33,6 +32,13 @@ eval set -- "$PARSED_OPTIONS"
 function printHelp {
     echo "NAME"
     echo -e "\t$prog_name"
+    echo
+    echo "SYNOPSIS"
+    echo -e "\t$prog_name " \
+        "[-h|--help]" \
+        "[-s|--source]" \
+        "[-t|--target]"
+    echo
 
     exit 0
 }
@@ -80,20 +86,22 @@ for DIR_PATH in $(find $SOURCE_PATH -mindepth 1 -maxdepth 1 -type d); do
     DIR_NAME=$(basename $DIR_PATH)
 
     echo
-    echo
     echo "Processing $DIR_NAME"
 
     NEW_DIR_PATH=$TARGET_PATH"/"$DIR_NAME"/"
     HEIGHTS_PATH=$NEW_DIR_PATH"heights/"
 
-    # mkdir -p $NEW_DIR_PATH
-    # mkdir -p $HEIGHTS_PATH
+    MAP_PATH=$NEW_DIR_PATH"map.png"
+    INFO_PATH=$NEW_DIR_PATH"info.json"
 
-    # cp $DIR_PATH"Map.png" $NEW_DIR_PATH"map.png"
-    # cp $DIR_PATH"Map_h.png" $HEIGHTS_PATH"bw.png"
+    mkdir -p $NEW_DIR_PATH
+    mkdir -p $HEIGHTS_PATH
 
-    # xml2json.py -s $DIR_PATH"Props.xml" -t $NEW_DIR_PATH"info.json"
-    update_town_areas.py --image=$NEW_DIR_PATH"map.png" --info=$NEW_DIR_PATH"info.json"
+    cp $DIR_PATH"Map.png" $MAP_PATH
+    cp $DIR_PATH"Map_h.png" $HEIGHTS_PATH"bw.png"
+
+    xml2json.py -s $DIR_PATH"Props.xml" -t $INFO_PATH
+    update_towns.py --image=$MAP_PATH --info=$INFO_PATH
 done
 
 echo "Done."
