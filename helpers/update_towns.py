@@ -89,7 +89,6 @@ def update_areas():
         json.dump(info, info_file)
 
     print "Done"
-    img.show()
 
 def get_primary_areas(info, data, size):
     if not 'labels' in info:
