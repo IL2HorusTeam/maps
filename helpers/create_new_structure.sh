@@ -81,7 +81,7 @@ echo -e "Target directory:\t" $TARGET_PATH
 # Processing
 # ------------------------------------------------------------------------------
 
-for DIR_PATH in $(find $SOURCE_PATH -mindepth 1 -maxdepth 1 -type d); do
+for DIR_PATH in $(find $SOURCE_PATH -mindepth 1 -maxdepth 1 -type d | sort); do
     DIR_PATH=$DIR_PATH"/"
     DIR_NAME=$(basename $DIR_PATH)
 
@@ -101,7 +101,7 @@ for DIR_PATH in $(find $SOURCE_PATH -mindepth 1 -maxdepth 1 -type d); do
     cp $DIR_PATH"Map_h.png" $HEIGHTS_PATH"bw.png"
 
     xml2json.py -s $DIR_PATH"Props.xml" -t $INFO_PATH
-    update_towns.py --image=$MAP_PATH --info=$INFO_PATH
+    update_labels_and_town_areas.py --image=$MAP_PATH --info=$INFO_PATH
 done
 
 echo "Done."

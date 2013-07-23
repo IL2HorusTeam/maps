@@ -50,16 +50,15 @@ def validate_settings():
 
 def validate_source_path():
     path = settings['source']
-    if os.path.exists(path):
-        if not os.path.isfile(path):
-            raise ValueError(u"Invalid source path {0}.".format(path))
-    else:
-        raise ValueError(u"Source file {0} does not exist.".format(path))
+    if not os.path.exists(path):
+        raise ValueError(u"Source file '{0}' does not exist.".format(path))
+    if not os.path.isfile(path):
+        raise ValueError(u"Invalid source path '{0}'.".format(path))
 
 def validate_target_path():
     path = settings['target']
     if os.path.exists(path) and not os.path.isfile(path):
-        raise ValueError(u"Invalid target path {0}.".format(path))
+        raise ValueError(u"Invalid target path '{0}'.".format(path))
 
 def convert():
     data = get_data()

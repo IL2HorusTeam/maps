@@ -7,7 +7,6 @@ import math
 import os
 
 from optparse import OptionParser, OptionGroup
-from xml.dom import minidom
 
 settings = {
     'image': "map.png",
@@ -15,15 +14,32 @@ settings = {
 }
 
 town_colors = [
-    # for old maps
-    (253, 253, 3),
-    (230, 230, 23),
-    (211, 211, 38),
-    (167, 166, 63),
-    (186, 188, 46),
-    # for new maps
+    (255, 255, 142),
+    (255, 255, 95),
+    (255, 255, 49),
+    (255, 255, 5),
     (255, 255, 0),
+    (255, 248, 43),
+    (255, 248, 34),
+    (246, 246, 5),
+    (245, 245, 6),
+    (244, 244, 96),
+    (243, 242, 128),
+    (253, 253, 3),
+    (239, 226, 87),
+    (230, 230, 23),
     (227, 227, 0),
+    (211, 211, 38),
+    (203, 203, 2),
+    (189, 190, 3),
+    (189, 189, 72),
+    (188, 189, 39),
+    (186, 188, 46),
+    (176, 175, 8),
+    (167, 166, 63),
+    (163, 163, 54),
+    (155, 155, 2),
+    (146, 146, 1),
 ]
 
 def main():
@@ -63,13 +79,12 @@ def validate_settings():
     validate_path(u"info", settings['info'])
 
 def validate_path(source_name, path):
-    if os.path.exists(path):
-        if not os.path.isfile(path):
-            raise ValueError(u"Invalid map {0} path {1}.".format(
-                source_name, path))
-    else:
-        raise ValueError(u"Map {0} file {1} does not exist.".format(
-            source_name, path))
+    if not os.path.exists(path):
+        raise ValueError(
+            u"Map {0} file '{1}' does not exist.".format(source_name, path))
+    if not os.path.isfile(path):
+        raise ValueError(
+            u"Invalid map {0} path '{1}'.".format(source_name, path))
 
 def update_areas():
     print "Updating town areas info..."
