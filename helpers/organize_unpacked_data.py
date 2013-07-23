@@ -122,16 +122,15 @@ def load_map_variant_texts(info, variant, paths):
             cols = line.strip().split()
             code_name = cols[6]
             storage_name = 'towns' if int(cols[5]) == 0 else 'labels'
-            titles = {}
-            for lang in langs.keys():
-                titles[lang] = i18n[code_name][lang]
             info[storage_name][code_name] = {
                 'pos': {
                     'x': int(cols[0]),
                     'y': int(cols[1]),
                 },
                 'type': int(cols[4]),
-                'title': titles,
+                'title': dict([
+                    (lang, i18n[code_name][lang]) for lang in langs.keys()
+                ]),
             }
             if code_name not in variant[storage_name]:
                 variant[storage_name].append(code_name)
