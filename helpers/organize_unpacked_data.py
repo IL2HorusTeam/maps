@@ -16,9 +16,11 @@ langs = {
     'ru': 'ru',
 }
 
+
 def main():
     parse_args()
     update_all_maps()
+
 
 def parse_args():
     parser = init_parser()
@@ -29,11 +31,13 @@ def parse_args():
     if options.target:
         settings['target'] = options.target
 
+
 def init_parser():
     usage = "usage: %prog [options]"
     parser = OptionParser(usage=usage)
     init_parser_groups(parser)
     return parser
+
 
 def init_parser_groups(parser):
     group = OptionGroup(parser, u"Input/output options")
@@ -49,6 +53,7 @@ def init_parser_groups(parser):
         help=u"Output directory root path")
     parser.add_option_group(group)
 
+
 def update_all_maps():
     target_root = os.path.join(settings['target'], 'maps')
     all_maps_info_path = os.path.join(target_root, 'all.json')
@@ -57,19 +62,21 @@ def update_all_maps():
     for code_name in map_code_names:
         update_map(os.path.join(target_root, code_name))
 
+
 def update_map(target_path):
     info_path = os.path.join(target_path, 'info.json')
     with open(info_path, 'r') as f:
         info = json.load(f)
     for variant in info['variants']:
         update_map_variant(info, variant)
-    # TODO: copy maps
     with open(info_path, 'w') as f:
         json.dump(info, f, indent=4, sort_keys=True)
+
 
 def update_map_variant(info, variant):
     loader_config_path = os.path.join(
         settings['source'], 'MAPS', variant['loader'])
+    loader_config_dir = os.path.dirname(loader_config_path)
     with open(loader_config_path, 'r') as f:
         flag = None
         for line in f.readlines():
@@ -88,35 +95,42 @@ def update_map_variant(info, variant):
                     variant,
                     paths={
                         'texts': os.path.join(
-                            os.path.dirname(loader_config_path),
-                            texts_file_name
-                        ),
-                        'props_root': os.path.join(settings['source'], 'i18n'),
+                            loader_config_dir, texts_file_name),
+                        'props_root': os.path.join(
+                            settings['source'], 'i18n'),
                     }
-
                 )
                 flag = None
+
 
 def get_config_value(line):
     return line.split('=')[1].strip()
 
+
 def load_map_variant_texts(info, variant, paths):
-    i18n = {}
-    for lang in langs.keys():
-        name = info['code_name']
-        suffix = langs[lang]
-        if suffix:
-            name += "_" + suffix
-        name += ".properties"
-        path = os.path.join(paths['props_root'], name)
-        with open(path, 'r') as f:
-            for line in f.readlines():
-                cols = line.split()
-                code_name = cols[0].strip()
-                value = unicode(cols[1].strip().decode('raw_unicode_escape'))
-                if code_name not in i18n:
-                    i18n[code_name] = {}
-                i18n[code_name][lang] = value
+
+    def get_properties_path(code_name, lang):
+        if lang:
+            name = "{0}_{1}.properties".format(code_name, lang)
+        else:
+            name = "{0}.properties".format(code_name)
+        return os.path.join(paths['props_root'], name)
+
+    def get_code_name_translations():
+        result = {}
+        for lang in langs.keys():
+            path = get_properties_path(info['code_name'], langs[lang])
+            with open(path, 'r') as f:
+                for line in f.readlines():
+                    cols = line.split()
+                    code_name = cols[0]
+                    value = unicode(cols[1].decode('raw_unicode_escape'))
+                    if code_name not in result:
+                        result[code_name] = {}
+                    result[code_name][lang] = value
+        return result
+
+    i18n = get_code_name_translations()
     with open(paths['texts'], 'r') as f:
         for line in f.readlines():
             cols = line.strip().split()
