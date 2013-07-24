@@ -2,8 +2,8 @@
     "airfields": {}, 
     "code_name": "ardennes", 
     "geometry": {
-        "height": 59200, 
-        "width": 40000
+        "height": 40000, 
+        "width": 59200
     }, 
     "labels": {
         "Asth": {

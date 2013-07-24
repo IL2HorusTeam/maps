@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+import Image
 import os
 
 from optparse import OptionParser, OptionGroup
@@ -68,15 +69,15 @@ def update_map(target_path):
     with open(info_path, 'r') as f:
         info = json.load(f)
     for variant in info['variants']:
-        update_map_variant(info, variant)
+        update_map_variant(info, variant, target_path)
     with open(info_path, 'w') as f:
         json.dump(info, f, indent=4, sort_keys=True)
 
 
-def update_map_variant(info, variant):
+def update_map_variant(info, variant, target_path):
     loader_config_path = os.path.join(
         settings['source'], 'MAPS', variant['loader'])
-    loader_config_dir = os.path.dirname(loader_config_path)
+    source_path = os.path.dirname(loader_config_path)
     with open(loader_config_path, 'r') as f:
         flag = None
         for line in f.readlines():
@@ -95,12 +96,26 @@ def update_map_variant(info, variant):
                     variant,
                     paths={
                         'texts': os.path.join(
-                            loader_config_dir, texts_file_name),
+                            source_path, texts_file_name),
                         'props_root': os.path.join(
                             settings['source'], 'i18n'),
                     }
                 )
                 flag = None
+    update_map_image(
+        info,
+        paths={
+            'src': os.path.join(source_path, "ed_m01.tga"),
+            'tgt': os.path.join(target_path, "map.png"),
+        }
+    )
+
+
+def update_map_image(info, paths):
+    img = Image.open(paths['src'])
+    img.save(paths['tgt'])
+    info['geometry']['width'] = img.size[0]*100
+    info['geometry']['height'] = img.size[1]*100
 
 
 def get_config_value(line):
