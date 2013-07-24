@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import fnmatch
 import json
 import Image
 import os
@@ -17,11 +18,16 @@ langs = {
     'ru': 'ru',
 }
 
+exclude_icons = [
+    'empty.tga',
+    'faractor.tga',
+]
+
 
 def main():
     parse_args()
     update_all_maps()
-
+    update_icons()
 
 def parse_args():
     parser = init_parser()
@@ -163,6 +169,18 @@ def load_map_variant_texts(info, variant, paths):
             }
             if code_name not in variant[storage_name]:
                 variant[storage_name].append(code_name)
+
+def update_icons():
+    source_path = os.path.join(settings['source'], 'icons')
+    target_path = os.path.join(settings['target'], 'icons')
+    if not os.path.exists(target_path):
+        os.makedirs(target_path)
+    for img_name in os.listdir(source_path):
+        if fnmatch.fnmatch(img_name, '*.tga') and img_name not in exclude_icons:
+            img = Image.open(
+                os.path.join(source_path, img_name))
+            img.save(
+                os.path.join(target_path, img_name.replace('.tga', '.png')))
 
 if __name__ == "__main__":
     main()
