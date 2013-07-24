@@ -29,6 +29,7 @@ def main():
     update_all_maps()
     update_icons()
 
+
 def parse_args():
     parser = init_parser()
     options, args = parser.parse_args()
@@ -120,8 +121,8 @@ def update_map_variant(info, variant, target_path):
 def update_map_image(info, paths):
     img = Image.open(paths['src'])
     img.save(paths['tgt'])
-    info['geometry']['width'] = img.size[0]*100
-    info['geometry']['height'] = img.size[1]*100
+    info['geometry']['width'] = img.size[0] * 100
+    info['geometry']['height'] = img.size[1] * 100
 
 
 def get_config_value(line):
@@ -169,6 +170,7 @@ def load_map_variant_texts(info, variant, paths):
             }
             if code_name not in variant[storage_name]:
                 variant[storage_name].append(code_name)
+
 
 def update_icons():
     source_path = os.path.join(settings['source'], 'icons')
