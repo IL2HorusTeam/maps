@@ -113,7 +113,7 @@ def update_map_variant(info, variant, target_path):
         info,
         paths={
             'src': os.path.join(source_path, "ed_m01.tga"),
-            'tgt': os.path.join(target_path, "map.png"),
+            'tgt': os.path.join(target_path, "topographical.png"),
         }
     )
 
