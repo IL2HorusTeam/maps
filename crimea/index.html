@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>
+        Crimea Demo
+    </title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+
+    <style>
+        body, html {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        #map {
+            height: 100%;
+        }
+    </style>
+
+    <!-- LeafletJS-->
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.css" />
+    <!--[if lte IE 8]>
+        <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.ie.css" />
+    <![endif]-->
+    <script src="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js"></script>
+
+    <!-- Leaflet-Hash -->
+    <script src="../plugins/hash/leaflet-hash.js"></script>
+
+    <!-- Leaflet-Fullscreen -->
+    <link rel="stylesheet" href="../plugins/fullscreen/Control.FullScreen.css" />
+    <script src="../plugins/fullscreen/Control.FullScreen.js"></script>
+
+    <!-- Leaflet-Measure -->
+    <link rel="stylesheet" href="../plugins/measure/leaflet.measure/leaflet.measure.css" />
+    <script src="../plugins/measure/leaflet.measure/leaflet.measure.js"></script>
+
+    <!-- Leaflet-Coordinates -->
+    <script type="text/javascript" src="../plugins/coordinates/leaflet.coordinates/Leaflet.Coordinates-0.1.4.src.js"></script>
+    <link rel="stylesheet" href="../plugins/coordinates/leaflet.coordinates/Leaflet.Coordinates-0.1.4.css"/>
+    <!--[if lte IE 8]><link rel="stylesheet" href="../plugins/coordinates/leaflet.coordinates/Leaflet.Coordinates-0.1.4.ie.css" /><![endif]-->
+</head>
+<body>
+    <div id="map"></div>
+    <script type="text/javascript">
+        L.Projection.NoWrap = {
+            project: function (latlng) {
+                return new L.Point(latlng.lng, latlng.lat)
+            },
+            unproject: function (point, unbounded) {
+                return new L.LatLng(point.y, point.x, true)
+            }
+        }
+        L.CRS.Direct = L.Util.extend({}, L.CRS, {
+            code: 'Direct'
+            , projection: L.Projection.NoWrap
+            , transformation: new L.Transformation(1, 0, 1, 0)
+        })
+
+        function get_layer(dir_name){
+            return L.tileLayer(dir_name+'/{z}/{x}_{y}.png', {
+                attribution: attrib
+                , tileSize: tile_size
+                , noWrap: true
+            })
+        }
+
+        var width = 2944
+        , height = 1664
+        , zoom = {
+            min: 2
+            , max: 4
+            , dflt: 2
+        }
+        , attrib = '<a href="https://github.com/IL2HorusTeam/" target="blank">IL-2 Horus Team</a>'
+        , tile_size = Math.max(width, height)/Math.pow(2, zoom.max)
+        , l_topo = get_layer('topo')
+        , l_jet = get_layer('jet')
+        , l_terra = get_layer('terrain')
+        , l_plains = get_layer('plains')
+        , map = L.map('map', {
+            minZoom: zoom.min
+            , maxZoom: zoom.max
+            , crs: L.CRS.Direct
+            , worldCopyJump: false
+            , layers: [l_topo]
+        })
+        , baseMaps = {
+            "Topographical": l_topo
+            , "Jet heights": l_jet
+            , "Terrain heights": l_terra
+            , "Plains": l_plains
+        }
+        , hash = new L.Hash(map)
+        , obj_pos = map.unproject([2020, 850], map.getMaxZoom())
+        , marker = L.marker(obj_pos).addTo(map).bindPopup("<b>Hello world!</b><br>I am Feodosia.")
+        , circle = L.circle(obj_pos, 1200, {
+            color: 'red'
+            , fillColor: '#f03'
+            , fillOpacity: 0.5
+        }).addTo(map)
+
+        if (!location.hash) {
+            map.setView(map.unproject([width/2, height/2], map.getMaxZoom()), zoom.dflt)
+        }
+
+        map.addControl(new L.Control.FullScreen())
+        map.addControl(new L.control.measure())
+        L.control.layers(baseMaps).addTo(map)
+        L.control.coordinates({
+            position: "bottomleft"
+            , decimals: 2
+            , decimalSeperator: "."
+            , labelTemplateLat: "Y: {y}"
+            , labelTemplateLng: "X: {x}"
+            , centerUserCoordinates: true
+        }).addTo(map)
+        marker.openPopup()
+    </script>
+</body>
+</html>

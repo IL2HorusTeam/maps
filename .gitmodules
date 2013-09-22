@@ -1,0 +1,12 @@
+[submodule "plugins/hash"]
+	path = plugins/hash
+	url = https://github.com/mlevans/leaflet-hash
+[submodule "plugins/fullscreen"]
+	path = plugins/fullscreen
+	url = git@github.com:IL2HorusTeam/leaflet.fullscreen.git
+[submodule "plugins/measure"]
+	path = plugins/measure
+	url = git@github.com:IL2HorusTeam/leaflet.measure.git
+[submodule "plugins/coordinates"]
+	path = plugins/coordinates
+	url = git@github.com:IL2HorusTeam/Leaflet.Coordinates.git
