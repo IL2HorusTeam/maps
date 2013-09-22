@@ -56,10 +56,8 @@ def main():
     im = src.resize((w, h), Image.ANTIALIAS)
 
     if h < side_size or w < side_size:
-        new = Image.new('RGB', (side_size, side_size), (255, 255, 255))
-        nw, nh = new.size
-        offset = ((nw-w)/2, (nh-h)/2)
-        new.paste(im, offset)
+        new = Image.new('RGBA', (side_size, side_size), (255, 255, 255, 0))
+        new.paste(im, (0, 0))
         im = new
 
     dname = os.path.join(dst, str(zoom))
