@@ -79,7 +79,6 @@
         , tile_size = Math.max(width, height)/Math.pow(2, zoom.max)
         , l_topo = get_layer('topo')
         , l_jet = get_layer('jet')
-        , l_terra = get_layer('terrain')
         , l_plains = get_layer('plains')
         , map = L.map('map', {
             minZoom: zoom.min
@@ -90,9 +89,8 @@
         })
         , baseMaps = {
             "Topographical": l_topo
-            , "Jet heights": l_jet
-            , "Terrain heights": l_terra
             , "Plains": l_plains
+            , "Heights": l_jet
         }
         , hash = new L.Hash(map)
         , obj_pos = map.unproject([2020, 850], map.getMaxZoom())

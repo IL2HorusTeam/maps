@@ -1,4 +1,4 @@
-maps
-====
+IL-2 FB Maps
+============
 
-Maps, height maps, maps info and maps js library for IL-2 FB
+Raw maps and heights data are available at [here](https://copy.com/uKwaDtRBJKix).
