@@ -28,20 +28,20 @@
     <script src="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js"></script>
 
     <!-- Leaflet-Hash -->
-    <script src="../plugins/hash/leaflet-hash.js"></script>
+    <script src="plugins/hash/leaflet-hash.js"></script>
 
     <!-- Leaflet-Fullscreen -->
-    <link rel="stylesheet" href="../plugins/fullscreen/Control.FullScreen.css" />
-    <script src="../plugins/fullscreen/Control.FullScreen.js"></script>
+    <link rel="stylesheet" href="plugins/fullscreen/Control.FullScreen.css" />
+    <script src="plugins/fullscreen/Control.FullScreen.js"></script>
 
     <!-- Leaflet-Measure -->
-    <link rel="stylesheet" href="../plugins/measure/leaflet.measure/leaflet.measure.css" />
-    <script src="../plugins/measure/leaflet.measure/leaflet.measure.js"></script>
+    <link rel="stylesheet" href="plugins/measure/leaflet.measure/leaflet.measure.css" />
+    <script src="plugins/measure/leaflet.measure/leaflet.measure.js"></script>
 
     <!-- Leaflet-Coordinates -->
-    <script type="text/javascript" src="../plugins/coordinates/leaflet.coordinates/Leaflet.Coordinates-0.1.4.src.js"></script>
-    <link rel="stylesheet" href="../plugins/coordinates/leaflet.coordinates/Leaflet.Coordinates-0.1.4.css"/>
-    <!--[if lte IE 8]><link rel="stylesheet" href="../plugins/coordinates/leaflet.coordinates/Leaflet.Coordinates-0.1.4.ie.css" /><![endif]-->
+    <script type="text/javascript" src="plugins/coordinates/leaflet.coordinates/Leaflet.Coordinates-0.1.4.src.js"></script>
+    <link rel="stylesheet" href="plugins/coordinates/leaflet.coordinates/Leaflet.Coordinates-0.1.4.css"/>
+    <!--[if lte IE 8]><link rel="stylesheet" href="plugins/coordinates/leaflet.coordinates/Leaflet.Coordinates-0.1.4.ie.css" /><![endif]-->
 </head>
 <body>
     <div id="map"></div>
@@ -61,7 +61,7 @@
         })
 
         function get_layer(dir_name){
-            return L.tileLayer(dir_name+'/{z}/{x}_{y}.png', {
+            return L.tileLayer('tiles/crimea/'+dir_name+'/{z}/{x}_{y}.png', {
                 attribution: attrib
                 , tileSize: tile_size
                 , noWrap: true
