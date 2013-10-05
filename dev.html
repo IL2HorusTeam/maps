@@ -15,6 +15,9 @@
             padding: 0;
             margin: 0;
         }
+        #map {
+            float: left;
+        }
         #map_wrap {
             width: 100%;
             height: 100%;
@@ -23,28 +26,25 @@
             border-collapse: collapse;
             display: table;
         }
-        #ruler_corner {
+        .ruler_left_corner, .ruler_right_corner {
             height: 20px;
             width: 20px;
             float: left;
         }
-        #ruler_corner, #top_ruler_wrap, #left_ruler_wrap {
+        .ruler_left_corner, .ruler_right_corner,
+        .ruler_horizontal_wrap, .ruler_vertical_wrap {
             padding: 0;
             margin: 0;
             background: #333;
             overflow: hidden;
         }
-        #top_ruler_wrap {
+        .ruler_horizontal_wrap {
             height: 20px;
-        }
-        #left_ruler_wrap {
             float: left;
         }
-        #top_ruler {
-            height: 20px;
-        }
-        #left_ruler {
+        .ruler_vertical_wrap {
             width: 20px;
+            float: left;
         }
     </style>
 
@@ -60,16 +60,218 @@
 </head>
 <body>
     <div id='map_wrap'>
-        <div id='ruler_corner'></div>
-        <div id='top_ruler_wrap'>
-            <canvas id='top_ruler'></canvas>
+        <div class='ruler_left_corner'></div>
+        <div class='ruler_horizontal_wrap'>
+            <canvas id='ruler_top' class='ruler_horizontal'></canvas>
         </div>
-        <div id='left_ruler_wrap'>
-            <canvas id='left_ruler'></canvas>
+        <div class='ruler_right_corner'></div>
+        <div class='ruler_vertical_wrap'>
+            <canvas id='ruler_left' class='ruler_vertical'></canvas>
         </div>
         <div id='map'></div>
+        <div class='ruler_vertical_wrap'>
+            <canvas id='ruler_right' class='ruler_vertical'></canvas>
+        </div>
+        <div class='ruler_left_corner'></div>
+        <div class='ruler_horizontal_wrap'>
+            <canvas id='ruler_bottom' class='ruler_horizontal'></canvas>
+        </div>
+        <div class='ruler_right_corner'></div>
     </div>
     <script type="text/javascript">
+
+        function get_layer(name){
+            return L.tileLayer('http://il2horusteam.github.io/maps/tiles/crimea/'+name+'/{z}/{x}_{y}.png', {
+                attribution: attrib
+                , tileSize: tile_size
+                , noWrap: true
+            })
+        }
+
+        function get_ruler_info(elem_id){
+            var canvas = document.getElementById(elem_id)
+            , context  = canvas.getContext('2d')
+            return {
+                canvas: canvas
+                , ctx: context
+            }
+        }
+
+        function get_map_scale(zoom_level){
+            return Math.pow(2, map.getMaxZoom() - zoom_level)
+        }
+
+        function get_zoomed_size(zoom_level) {
+            var scale = get_map_scale(zoom_level)
+            return {
+                scale: scale
+                , width: width/scale
+                , height: height/scale
+            }
+        }
+
+        function update_map_container(){
+            var c_width = $(window).width() - RULER_SIZE*2
+            , c_height = $(window).height() - RULER_SIZE*2
+
+            if (c_width > width){
+                c_width = width
+            }
+            if (c_height > height){
+                c_height = height
+            }
+
+            $('.ruler_horizontal_wrap').width(c_width).height(RULER_SIZE)
+            $('.ruler_vertical_wrap').height(c_height).width(RULER_SIZE)
+            $('#map').width(c_width).height(c_height)
+
+            L.Util.requestAnimFrame(map.invalidateSize, map, !1, map._container)
+
+            // Get max size of currect area side
+            var side = Math.max(c_width, c_height)
+            // Get min zoom for current area
+            , min_zoom = Math.max(zoom.min, Math.ceil(Math.log(side/tile_size)/Math.LN2))
+            , z = get_zoomed_size(min_zoom)
+
+            // If zoomed side is less then current area side, increase min zoom
+            if (z.width < c_width || z.height < c_height){
+                min_zoom += 1
+            }
+
+            map.options.minZoom = min_zoom
+            if (map.getZoom() < min_zoom){
+                map.setZoom(min_zoom)
+            }
+            if (map.zoomControl){
+                map.zoomControl._updateDisabled()
+            }
+        }
+
+        function x_to_square_name(x) {
+            var k = Math.floor(x / CELL_SIDE)
+            , name = '';
+            if (is_wide_map) {
+                var periods = Math.floor(k / MAX_LETTERS)
+                name += String.fromCharCode(65 + periods)
+            }
+            name += String.fromCharCode(65 + (k % MAX_LETTERS))
+            return name
+        }
+
+        function y_to_square_number(y) {
+            return Math.floor(y / CELL_SIDE) + 1
+        }
+
+        function draw_horizontal_ruler(target, w, scale) {
+            target.canvas.width = w
+            target.canvas.height = RULER_SIZE
+            target.ctx.clearRect(0, 0, target.canvas.width, target.canvas.height)
+
+            target.ctx.fillStyle = RULER_TEXT_STROKE
+            target.ctx.fillRect(0, 0, target.canvas.width, target.canvas.height)
+
+            target.ctx.fillStyle = RULER_STROKE
+            target.ctx.font = "14px Sans-serif"
+
+            var metrics = null
+            , text = null
+            , cell_size = CELL_SIDE/scale
+
+            for (var x = 0; x < target.canvas.width; x += cell_size) {
+                target.ctx.moveTo(x + 0.5, RULER_PADDING)
+                target.ctx.lineTo(x + 0.5, RULER_SIZE-RULER_PADDING)
+
+                text = x_to_square_name(x*scale)
+                metrics = target.ctx.measureText(text)
+                target.ctx.fillText(text, x+(cell_size/2)-(metrics.width/2), 15)
+            }
+
+            target.ctx.moveTo(target.canvas.width - 0.5, RULER_PADDING)
+            target.ctx.lineTo(target.canvas.width - 0.5, RULER_SIZE-RULER_PADDING)
+
+            target.ctx.strokeStyle = RULER_STROKE
+            target.ctx.stroke()
+        }
+
+        function draw_vertical_ruler(target, h, scale) {
+            target.canvas.height = h
+            target.canvas.width = RULER_SIZE
+
+            target.ctx.clearRect(0, 0, target.canvas.width, target.canvas.height)
+
+            target.ctx.fillStyle = RULER_TEXT_STROKE
+            target.ctx.fillRect(0, 0, target.canvas.width, target.canvas.height)
+
+            target.ctx.fillStyle = RULER_STROKE
+            target.ctx.strokeStyle = RULER_STROKE
+            target.ctx.font = "14px Sans-serif"
+
+            var metrics = null
+            , text = null
+            , cell_size = CELL_SIDE/scale
+
+            target.ctx.moveTo(RULER_PADDING, target.canvas.height - 0.5)
+            target.ctx.lineTo(RULER_SIZE-RULER_PADDING, target.canvas.height - 0.5)
+
+            for (var y = target.canvas.height; y > 0; y -= cell_size) {
+                target.ctx.moveTo(RULER_PADDING, y + 0.5)
+                target.ctx.lineTo(RULER_SIZE-RULER_PADDING, y + 0.5)
+
+                text = y_to_square_number(height - (y*scale))
+                metrics = target.ctx.measureText(text)
+                target.ctx.fillText(text, (RULER_SIZE/2)-(metrics.width/2), y-(cell_size/2) + 7)
+            }
+
+            target.ctx.moveTo(RULER_PADDING, 0.5)
+            target.ctx.lineTo(RULER_SIZE-RULER_PADDING, 0.5)
+
+            target.ctx.stroke()
+        }
+
+        function draw_rulers() {
+            var zoomed = get_zoomed_size(map.getZoom())
+            draw_horizontal_ruler(rulers.top, zoomed.width, zoomed.scale)
+            draw_horizontal_ruler(rulers.bottom, zoomed.width, zoomed.scale)
+            draw_vertical_ruler(rulers.left, zoomed.height, zoomed.scale)
+            draw_vertical_ruler(rulers.right, zoomed.height, zoomed.scale)
+        }
+
+        function get_grid_layer() {
+            var gridlines = new L.LayerGroup()
+            , line_style = {
+                color: 'black'
+                , opacity: 0.5
+                , weight: 1
+                , clickable: false
+            }
+            // First top line
+            gridlines.addLayer(new L.Polyline([
+                map.unproject([0, 0], map.getMaxZoom())
+                , map.unproject([width, 0], map.getMaxZoom())
+            ] , line_style))
+            // All horizontal lines
+            for (var y = height; y > 0; y -= CELL_SIDE) {
+                gridlines.addLayer(new L.Polyline([
+                    map.unproject([0, y], map.getMaxZoom())
+                    , map.unproject([width, y], map.getMaxZoom())
+                ] , line_style))
+            }
+            // All vertical lines
+            for (var x = 0; x < width; x += CELL_SIDE) {
+                gridlines.addLayer(new L.Polyline([
+                    map.unproject([x, 0], map.getMaxZoom())
+                    , map.unproject([x, height], map.getMaxZoom())
+                ] , line_style))
+            }
+            // Last right line
+            gridlines.addLayer(new L.Polyline([
+                map.unproject([width, 0], map.getMaxZoom())
+                , map.unproject([width, height], map.getMaxZoom())
+            ], line_style))
+
+            return gridlines
+        }
+
         L.Projection.NoWrap = {
             project: function (latlng) {
                 return new L.Point(latlng.lng, latlng.lat)
@@ -78,21 +280,21 @@
                 return new L.LatLng(point.y, point.x, true)
             }
         }
+
         L.CRS.Direct = L.Util.extend({}, L.CRS, {
             code: 'Direct'
             , projection: L.Projection.NoWrap
             , transformation: new L.Transformation(1, 0, 1, 0)
         })
 
-        function get_layer(dir_name){
-            return L.tileLayer('http://il2horusteam.github.io/maps/tiles/crimea/'+dir_name+'/{z}/{x}_{y}.png', {
-                attribution: attrib
-                , tileSize: tile_size
-                , noWrap: true
-            })
+        var rulers = {
+            top: get_ruler_info('ruler_top'),
+            bottom: get_ruler_info('ruler_bottom'),
+            left: get_ruler_info('ruler_left'),
+            right: get_ruler_info('ruler_right'),
         }
 
-        var CELL_SIDE = 100
+        , CELL_SIDE = 100
         , MAX_LETTERS = 26
         , RULER_SIZE = 20
         , RULER_PADDING = 3
@@ -122,12 +324,7 @@
             , worldCopyJump: false
             , layers: [l_topo]
         })
-
-        , ruler_top_canvas = document.getElementById("top_ruler")
-        , ruler_top_ctx = ruler_top_canvas.getContext("2d")
-        , ruler_left_canvas = document.getElementById("left_ruler")
-        , ruler_left_ctx = ruler_left_canvas.getContext("2d")
-
+        , l_grid = get_grid_layer()
         , map_bounds = new L.LatLngBounds([0, 0])
         map_bounds._northEast = map.unproject([width, 0], map.getMaxZoom())
         map_bounds._southWest = map.unproject([0, height], map.getMaxZoom())
@@ -136,163 +333,34 @@
             "Topographical": l_topo
             , "Plains": l_plains
             , "Heights": l_jet
+        }
+        , {
+            "Grid": l_grid
         }).addTo(map)
 
-        updateContainer()
+        // Enable grids by default
+        l_grid.addTo(map)
+
+        update_map_container()
         map.setMaxBounds(map_bounds)
 
         if (!location.hash) {
             map.setView(map.unproject([0, 0], zoom.max), zoom.dflt)
         }
 
-        drawRullers()
-
-        function get_map_scale(zoom_level){
-            return Math.pow(2, map.getMaxZoom() - zoom_level)
-        }
-
-        function get_zoomed_size(zoom_level) {
-            var scale = get_map_scale(zoom_level)
-            return {
-                scale: scale
-                , width: width/scale
-                , height: height/scale
-            }
-        }
-
-        function updateContainer(){
-            var c_width = $(window).width() - RULER_SIZE
-            , c_height = $(window).height() - RULER_SIZE
-
-            if (c_width > width){
-                c_width = width
-            }
-            if (c_height > height){
-                c_height = height
-            }
-
-            $('#top_ruler_wrap').width(c_width).height(RULER_SIZE)
-            $('#left_ruler_wrap').height(c_height).width(RULER_SIZE)
-            $('#map').width(c_width).height(c_height)
-
-            L.Util.requestAnimFrame(map.invalidateSize, map, !1, map._container)
-
-            // Get max size of currect area side
-            var side = Math.max(c_width, c_height)
-            // Get min zoom for current area
-            , min_zoom = Math.max(zoom.min, Math.ceil(Math.log(side/tile_size)/Math.LN2))
-            , z = get_zoomed_size(min_zoom)
-
-            // If zoomed side is less then current area side, increase min zoom
-            if (z.width < c_width || z.height < c_height){
-                min_zoom += 1
-            }
-
-            map.options.minZoom = min_zoom
-            if (map.getZoom() < min_zoom){
-                map.setZoom(min_zoom)
-            }
-            if (map.zoomControl){
-                map.zoomControl._updateDisabled()
-            }
-        }
-
-        function squareName(x) {
-            var k = Math.floor(x / CELL_SIDE)
-            , name = '';
-            if (is_wide_map) {
-                var periods = Math.floor(k / MAX_LETTERS)
-                name += String.fromCharCode(65 + periods)
-            }
-            name += String.fromCharCode(65 + (k % MAX_LETTERS))
-            return name
-        }
-
-        function squareNumber(y) {
-            return Math.floor(y / CELL_SIDE) + 1
-        }
-
-        function drawTopRuler(w, scale) {
-            ruler_top_canvas.style.left = '0px'
-
-            ruler_top_canvas.width = w
-            ruler_top_canvas.height = RULER_SIZE
-            ruler_top_ctx.clearRect(0, 0, ruler_top_canvas.width, ruler_top_canvas.height)
-
-            ruler_top_ctx.fillStyle = RULER_TEXT_STROKE
-            ruler_top_ctx.fillRect(0, 0, ruler_top_canvas.width, ruler_top_canvas.height)
-
-            ruler_top_ctx.fillStyle = RULER_STROKE
-            ruler_top_ctx.font = "14px Sans-serif"
-
-            var metrics = null
-            , text = null
-            , cell_size = CELL_SIDE/z_size.scale
-
-            for (var x = 0; x < ruler_top_canvas.width; x += cell_size) {
-                ruler_top_ctx.moveTo(0.5 + x, RULER_PADDING)
-                ruler_top_ctx.lineTo(0.5 + x, RULER_SIZE-RULER_PADDING)
-
-                text = squareName(x*scale)
-                metrics = ruler_top_ctx.measureText(text)
-                ruler_top_ctx.fillText(text, x+(cell_size/2)-(metrics.width/2), 15)
-            }
-
-            ruler_top_ctx.strokeStyle = RULER_STROKE
-            ruler_top_ctx.stroke()
-        }
-
-        function drawLeftRuler(h, scale) {
-            ruler_left_canvas.style.top = '0px'
-
-            ruler_left_canvas.height = h
-            ruler_left_canvas.width = RULER_SIZE
-
-            ruler_left_ctx.clearRect(0, 0, ruler_left_canvas.width, ruler_left_canvas.height)
-
-            ruler_left_ctx.fillStyle = RULER_TEXT_STROKE
-            ruler_left_ctx.fillRect(0, 0, ruler_left_canvas.width, ruler_left_canvas.height)
-
-            ruler_left_ctx.fillStyle = RULER_STROKE
-            ruler_left_ctx.strokeStyle = RULER_STROKE
-            ruler_left_ctx.font = "14px Sans-serif"
-
-            var metrics = null
-            , text = null
-            , cell_size = CELL_SIDE/z_size.scale
-
-            for (var y = ruler_left_canvas.height; y > 0; y -= cell_size) {
-                ruler_left_ctx.moveTo(RULER_PADDING, 0.5 + y)
-                ruler_left_ctx.lineTo(RULER_SIZE-RULER_PADDING, 0.5 + y)
-
-                text = squareNumber(height-(y*scale))
-                metrics = ruler_left_ctx.measureText(text)
-                ruler_left_ctx.fillText(text, (RULER_SIZE/2)-(metrics.width/2), y-(cell_size/2)+7)
-            }
-
-            ruler_left_ctx.moveTo(RULER_PADDING, 0.5)
-            ruler_left_ctx.lineTo(RULER_SIZE-RULER_PADDING, 0.5)
-
-            ruler_left_ctx.stroke()
-        }
-
-        function drawRullers() {
-            z_size = get_zoomed_size(map.getZoom())
-            drawTopRuler(z_size.width, z_size.scale)
-            drawLeftRuler(z_size.height, z_size.scale)
-        }
+        draw_rulers()
 
         map.on('zoomend', function(e){
-            drawRullers()
+            draw_rulers()
         })
         map.on('move', function(e){
             var offset = map.project(
-                map.getBounds()._southWest, map.getMaxZoom())
+                map.getBounds().getSouthWest(), map.getMaxZoom())
             , scale = get_map_scale(map.getZoom())
-            $('#top_ruler').css('margin-left', -offset.x/scale);
-            $('#left_ruler').css('margin-top', -offset.y/scale);
+            $('.ruler_horizontal').css('margin-left', -offset.x/scale);
+            $('.ruler_vertical').css('margin-top', -offset.y/scale);
         })
-        $(window).resize(updateContainer)
+        $(window).resize(update_map_container)
     </script>
 </body>
 </html>
