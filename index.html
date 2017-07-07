@@ -77,7 +77,7 @@
         }
         , attrib = '<a href="https://github.com/IL2HorusTeam/" target="blank">IL-2 Horus Team</a>'
         , tile_size = Math.max(width, height)/Math.pow(2, zoom.max)
-        , l_topo = get_layer('topo')
+        , l_default = get_layer('default')
         , l_jet = get_layer('jet')
         , l_plains = get_layer('plains')
         , map = L.map('map', {
@@ -85,10 +85,10 @@
             , maxZoom: zoom.max
             , crs: L.CRS.Direct
             , worldCopyJump: false
-            , layers: [l_topo]
+            , layers: [l_default]
         })
         , baseMaps = {
-            "Topographical": l_topo
+              "Default": l_default
             , "Plains": l_plains
             , "Heights": l_jet
         }

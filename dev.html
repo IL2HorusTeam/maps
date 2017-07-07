@@ -81,7 +81,8 @@
     <script type="text/javascript">
 
         function get_layer(name){
-            return L.tileLayer('http://il2horusteam.github.io/maps/tiles/crimea/'+name+'/{z}/{x}_{y}.png', {
+            // return L.tileLayer('http://maps.il2.oblalex.space/crimea/' + name + '/{z}/{x}_{y}.png', {
+            return L.tileLayer('tiles/crimea/' + name + '/{z}/{x}_{y}.png', {
                 attribution: attrib
                 , tileSize: tile_size
                 , noWrap: true
@@ -111,8 +112,8 @@
         }
 
         function update_map_container(){
-            var c_width = $(window).width() - RULER_SIZE*2
-            , c_height = $(window).height() - RULER_SIZE*2
+            var c_width = $(window).width() - RULER_SIZE * 2
+            , c_height = $(window).height() - RULER_SIZE * 2
 
             if (c_width > width){
                 c_width = width
@@ -313,7 +314,7 @@
         , attrib = '<a href="https://github.com/IL2HorusTeam/" target="blank">IL-2 Horus Team</a>'
         , tile_size = Math.max(width, height)/Math.pow(2, zoom.max)
 
-        , l_topo = get_layer('topo')
+        , l_default = get_layer('default')
         , l_plains = get_layer('plains')
         , l_jet = get_layer('jet')
 
@@ -322,7 +323,7 @@
             , minZoom: zoom.min
             , maxZoom: zoom.max
             , worldCopyJump: false
-            , layers: [l_topo]
+            , layers: [l_default]
         })
         , l_grid = get_grid_layer()
         , map_bounds = new L.LatLngBounds([0, 0])
@@ -330,7 +331,7 @@
         map_bounds._southWest = map.unproject([0, height], map.getMaxZoom())
 
         L.control.layers({
-            "Topographical": l_topo
+              "Default": l_default
             , "Plains": l_plains
             , "Heights": l_jet
         }
